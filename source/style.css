@@ -1,0 +1,65 @@
+:root {
+  --background-color: black;
+  --light-background-color: rgba(0, 0, 0, 0.7);
+  --text-color: white;
+  --accent-color: rgb(0, 238, 255);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-color);
+  border: none;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color);
+}
+::-webkit-scrollbar-thumb:active {
+  background: var(--text-color);
+}
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0);
+  border: none;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-track:hover {
+  background: rgba(0,0,0,0);
+}
+::-webkit-scrollbar-track:active {
+  background: rgba(0,0,0,0);
+}
+::-webkit-scrollbar-corner {
+  background: rgba(0,0,0,0);
+}
+
+*{
+  transition-duration: 0.5s;
+  scrollbar-color: var(--text-color) rgba(0,0,0,0) !important;
+  scrollbar-width: thin !important;
+}
+
+body {
+  background: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Fira Sans', sans-serif;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+	color: var(--accent-color);
+}
+
+a:hover {
+	opacity: 0.5;
+}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HUB Young downloader</title>
+  <meta name="description" content="A simple website that allows you to create an ofline backup of your books on HUB Young">
+  <meta name="author" content="Enrico">
+  <link rel="stylesheet" href="source/style.css">
+</head>
+<body>
+<p>
+  How to use:
+  <ol>
+    <li>Open an login in your HUB Young account <a href="https://www.hubscuola.it/" target="_blank" rel="noopener noreferrer">here</a>.</li>
+    <li>Open the book you'd like to download in the HUB Young own web reader.</li>
+    <li>Copy the number from the url("https://young.hubscuola.it/viewer/{this thing}?page=1") in the volume id.</li>
+    <li>Now open the developer tools with CTRL + SHIFT + I and go under the "application" tab, on the list of the left select "local storage" then where it says "https://young.hubscuola.it/" and on the table that will appear look for the "tokenSession", click on that. It will appear on the bottom, copy it without the quotation marks and put it in the token.
+    </li>
+    <li>You are now ready to download! Just press that button and it will do it all, might take a while tho.</li>
+  </ol>
+</p>
+<p>
+  Remember that you are sesponsible for what you are doing on the internet and even tho this website exists it might not be legal in your country to create personal backups of books.
+</p>
+<p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</p>
+<p><form>
+token :<input type="text" id="token">
+<br>
+volume id :<input type="text" id="volume-id">
+<br>
+<input type="button" value="get" onclick="download()">
+</form></p>
+<p id="result"></p>
+<br>
+<p>
+  Made with love by Enrico, <a href="https://github.com/Leone25/hub-young-downloader">star on github</a>
+</p>
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js" ></script>
+<script src="source/script.js"></script>
+</body>
+</html>
