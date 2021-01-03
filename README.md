@@ -1,7 +1,7 @@
 # hub-young-downloader
 A simple website that allows you to create an ofline backup of your books on HUB Young
 
-[Use it!](http://hubyoungdownloader.ddns.net/)
+[Use it!](http://hubyoung.enrico.wtf/)
 
 MIT licence
 
