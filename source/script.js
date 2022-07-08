@@ -38,37 +38,27 @@ async function download() {
     if (code === 500) {
         info("Volume ID not valid");
     } else if (code === 401) {
-        info(`Token Session not valid, you may have copied it wrong or you don't own this book.`);
+        info("Token Session not valid, you may have copied it wrong or you don't own this book.");
     } else {
         let result = await response.json();
         const title = result.title;
         console.log(result);
         info(`Downloading "${title}"`);
         preventExit(true);
-        let pdfDoc = await PDFDocument.create();
-        for (i = 0; i < result.pagesId.length; i++) {
-            info(`${title}\nDownloading page ${i} of ${result.pagesId.length} - ${(i / result.pagesId.length * 100).toFixed(2)}%`);
-
-            let pageInfo = await fetch(`https://ms-api.hubscuola.it/meyoung/publication/${volumeId}/page/${result.pagesId[i]}`, { method: "GET", headers: { "Token-Session": token, "Content-Type": "application/json" } }).then(res => res.json());
-            let pageData = await fetch(pageInfo.renders.last().mediaUrl, { method: "GET", cache: "force-cache" }).then((res) => res.arrayBuffer());
-
-            let { height, width, topCrop, leftCrop } = pageInfo.renders.last();
-
-            let page = pdfDoc.addPage([width, height]);
-
-            let pageImage = await pdfDoc.embedJpg(pageData);
-
-            page.drawImage(pageImage, {
-                x: leftCrop,
-                y: height - pageImage.height - topCrop,
-            });
-        }
-        info(`Generating file . . .`);
-        pdfDoc.setTitle(title);
-        let pdfBytes = await pdfDoc.save();
+        info(`Obtaining access token . . .`);
+        let auth = await fetch(`https://ms-pdf.hubscuola.it/i/d/${volumeId}/auth`, { 
+            method: "POST", 
+            body: JSON.stringify({jwt: result.jwt, origin: `https://young.hubscuola.it/viewer/${volumeId}?page=1`}), 
+            headers: { 
+                "PSPDFKit-Platform": "web", 
+                "PSPDFKit-Version": "protocol=3, client=2020.6.0, client-git=63c8a36705"
+            } 
+        }).then(res => res.json());
+        info(`Downloading PDF (may take a couple of seconds) . . .`);
+        let pdf = await fetch(`https://ms-pdf.hubscuola.it/i/d/${volumeId}/h/${auth.layerHandle}/pdf?token=${auth.token}`).then(res => res.blob());
         let link = document.createElement('a');
         link.download = title + '.pdf';
-        let blob = new Blob([pdfBytes.buffer], { type: 'text/plain' });
+        let blob = new Blob([pdf], { type: 'text/plain' });
         link.href = URL.createObjectURL(blob);
         info(`Saving!`);
         link.click();
