@@ -1,5 +1,3 @@
-const { PDFDocument, StandardFonts, rgb } = PDFLib;
-
 const warningAcceptInput = document.getElementById("warning-accept");
 const warningAcceptLabel = document.getElementById("warning-accept-label");
 const submit = document.getElementById("download");
