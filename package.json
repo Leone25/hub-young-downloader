@@ -1,0 +1,25 @@
+{
+  "name": "hub-young-downloader",
+  "version": "2.0.0",
+  "description": "A simple tool that allows you to create an ofline backup of your books on HUB Young",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leone25/hub-young-downloader.git"
+  },
+  "author": "Enrico",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Leone25/hub-young-downloader/issues"
+  },
+  "homepage": "https://github.com/Leone25/hub-young-downloader#readme",
+  "type": "module",
+  "dependencies": {
+    "node-fetch": "^3.2.6",
+    "prompt-sync": "^4.2.0",
+    "yargs": "^17.5.1"
+  }
+}
