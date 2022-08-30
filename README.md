@@ -22,11 +22,15 @@ A tool website that allows you to create an ofline backup of your books on HUB Y
 
 ## How to Use
 
-1. Open an login in your HUB Young account on your web browser.
-2. Open the book you'd like to download in the HUB Young web reader.
-3. Copy the number from the url https://young.hubscuola.it/viewer/########?page=1 in the command line where it asks for the `Volume ID`.
-4. Now open the developer tools with CTRL + SHIFT + I and go under the application tab, on the list of the left select local storage then where it says https://young.hubscuola.it/ and on the table that will appear look for the `tokenSession`, click on that. It will appear on the bottom, copy it without the quotation marks and paste it in the command line where it asks for the `token`.
-5. You are now ready to download! Just press enter and it will do it all.
+1. Run the script using:
+   ```shell
+   node index.js
+   ```
+2. Open an login in your HUB Young account on your web browser.
+3. Open the book you'd like to download in the HUB Young web reader.
+4. Copy the number from the url https://young.hubscuola.it/viewer/########?page=1 in the command line where it asks for the `Volume ID`.
+5. Now open the developer tools with CTRL + SHIFT + I and go under the application tab, on the list of the left select local storage then where it says https://young.hubscuola.it/ and on the table that will appear look for the `tokenSession`, click on that. It will appear on the bottom, copy it without the quotation marks and paste it in the command line where it asks for the `token`.
+6. You are now ready to download! Just press enter and it will do it all.
 
 ## Disclaimer
 
