@@ -1,5 +1,5 @@
 # hub-young-downloader
-A tool website that allows you to create an ofline backup of your books on HUB Young
+A tool that allows you to create an ofline backup of your books on HUB Young
 
 ## Requirements
 
