@@ -22,9 +22,11 @@ A tool that allows you to create an ofline backup of your books on HUB Young
 
 ## How to Use
 
-1. Run the script using:
+1. Run the script using one of these scripts (which one to use depends on where your book is stored):
    ```shell
-   node index.js
+   node index-young.js
+   -OR-
+   node index-kids.js
    ```
 2. Open an login in your HUB Young account on your web browser.
 3. Open the book you'd like to download in the HUB Young web reader.
