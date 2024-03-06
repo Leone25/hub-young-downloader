@@ -6,6 +6,11 @@ import PromptSync from 'prompt-sync';
 const prompt = PromptSync({ sigint: true });
 
 const argv = yargs(process.argv)
+  .option('platform', {
+	alias: 'p',
+	description: 'Platform to download from, either "hubyoung" or "hubkids"',
+	type: 'string',
+  })
   .option('volumeId', {
     alias: 'v',
     description: 'Volume ID of the book to download',
@@ -28,7 +33,16 @@ const argv = yargs(process.argv)
 
     let volumeId = argv.volumeId;
     let token = argv.token;
+	let platform = argv.platform;
 
+	while (!platform) {
+		platform = prompt("Input the platform (either 'hubyoung' or 'hubkids'): ");
+		if (platform !== 'hubyoung' && platform !== 'hubkids') {
+			console.log("Invalid platform, please input either 'hubyoung' or 'hubkids'");
+			platform = null;
+		}
+	}
+	platform = platform === 'hubyoung' ? 'young' : 'kids';
     while (!volumeId)
         volumeId = prompt("Input the volume ID: ");
     while (!token)
@@ -36,7 +50,7 @@ const argv = yargs(process.argv)
 
     console.log("Obtaining volume info . . . ");
 
-    let response = await fetch("https://ms-api.hubscuola.it/meyoung/publication/" + volumeId, { method: "GET", headers: { "Token-Session": token, "Content-Type": "application/json" } });
+    let response = await fetch("https://ms-api.hubscuola.it/me" + platform + "/publication/" + volumeId, { method: "GET", headers: { "Token-Session": token, "Content-Type": "application/json" } });
     const code = response.status;
     if (code === 500) {
         console.log("Volume ID not valid");
@@ -48,7 +62,7 @@ const argv = yargs(process.argv)
         console.log(`Downloading "${title}"\nObtaining access token . . .`);
         let auth = await fetch(`https://ms-pdf.hubscuola.it/i/d/${volumeId}/auth`, { 
             method: "POST", 
-            body: JSON.stringify({jwt: result.jwt, origin: `https://young.hubscuola.it/viewer/${volumeId}?page=1`}), 
+            body: JSON.stringify({jwt: result.jwt, origin: `https://${platform}.hubscuola.it/viewer/${volumeId}?page=1`}), 
             headers: { 
                 "PSPDFKit-Platform": "web", 
                 "PSPDFKit-Version": "protocol=3, client=2020.6.0, client-git=63c8a36705"
