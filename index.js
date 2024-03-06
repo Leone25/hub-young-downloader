@@ -11,6 +11,11 @@ const argv = yargs(process.argv)
     description: 'Volume ID of the book to download',
     type: 'string',
   })
+  .option('container', {
+    alias: 'c',
+    description: 'Container for the book (either Kids or Young)',
+    type: 'string',
+  })
   .option('token', {
     alias: 't',
     description: 'Token of the user',
@@ -28,15 +33,18 @@ const argv = yargs(process.argv)
 
     let volumeId = argv.volumeId;
     let token = argv.token;
+    let container = argv.container;
 
     while (!volumeId)
         volumeId = prompt("Input the volume ID: ");
     while (!token)
         token = prompt("Input the token: ");
+    while (!container) 
+        container = prompt("Insert the container for your book (either 'kids' or 'young')");
 
     console.log("Obtaining volume info . . . ");
 
-    let response = await fetch("https://ms-api.hubscuola.it/mekids/publication/" + volumeId, { method: "GET", headers: { "Token-Session": token, "Content-Type": "application/json" } });
+    let response = await fetch("https://ms-api.hubscuola.it/me" + container + "/publication/" + volumeId, { method: "GET", headers: { "Token-Session": token, "Content-Type": "application/json" } });
     const code = response.status;
     if (code === 500) {
         console.log("Volume ID not valid");
@@ -48,7 +56,7 @@ const argv = yargs(process.argv)
         console.log(`Downloading "${title}"\nObtaining access token . . .`);
         let auth = await fetch(`https://ms-pdf.hubscuola.it/i/d/${volumeId}/auth`, { 
             method: "POST", 
-            body: JSON.stringify({jwt: result.jwt, origin: `https://kids.hubscuola.it/viewer/${volumeId}?page=1`}), 
+            body: JSON.stringify({jwt: result.jwt, origin: `https://` + container + `.hubscuola.it/viewer/${volumeId}?page=1`}), 
             headers: { 
                 "PSPDFKit-Platform": "web", 
                 "PSPDFKit-Version": "protocol=3, client=2020.6.0, client-git=63c8a36705"
