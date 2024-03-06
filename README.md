@@ -22,7 +22,7 @@ A tool that allows you to create an ofline backup of your books on HUB Young and
 
 ## How to Use
 
-1. Run the script using:
+1. Run the script using this script.
    ```shell
    node index.js
    ```

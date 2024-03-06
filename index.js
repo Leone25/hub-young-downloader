@@ -16,6 +16,11 @@ const argv = yargs(process.argv)
     description: 'Volume ID of the book to download',
     type: 'string',
   })
+  .option('container', {
+    alias: 'c',
+    description: 'Container for the book (either Kids or Young)',
+    type: 'string',
+  })
   .option('token', {
     alias: 't',
     description: 'Token of the user',
@@ -47,6 +52,8 @@ const argv = yargs(process.argv)
         volumeId = prompt("Input the volume ID: ");
     while (!token)
         token = prompt("Input the token: ");
+    while (!container) 
+        container = prompt("Insert the container for your book (either 'kids' or 'young')");
 
     console.log("Obtaining volume info . . . ");
 
