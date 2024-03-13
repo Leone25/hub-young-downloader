@@ -52,8 +52,6 @@ const argv = yargs(process.argv)
         volumeId = prompt("Input the volume ID: ");
     while (!token)
         token = prompt("Input the token: ");
-    while (!container) 
-        container = prompt("Insert the container for your book (either 'kids' or 'young')");
 
     console.log("Obtaining volume info . . . ");
 
