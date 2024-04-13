@@ -1,3 +1,11 @@
+# **BROKEN UNTILL FURTHER NOTICE**
+
+
+
+
+
+
+
 # hub-young-downloader
 A tool that allows you to create an ofline backup of your books on HUB Young and HUB Kids
 
