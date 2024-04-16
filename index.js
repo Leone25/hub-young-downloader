@@ -1,8 +1,9 @@
 import sqlite3 from "sqlite3";
 import AdmZip from "adm-zip";
 import PDFMerger from "pdf-merger-js";
-import request from "sync-request";
+import fetch from "node-fetch";
 import fsExtra from "fs-extra";
+import fs from "fs/promises";
 import yargs from "yargs";
 import PromptSync from "prompt-sync";
 
@@ -26,11 +27,6 @@ const argv = yargs(process.argv)
         description: "Volume ID of the book to download",
         type: "string",
     })
-    .option("container", {
-        alias: "c",
-        description: "Container for the book (either Kids or Young)",
-        type: "string",
-    })
     .option("token", {
         alias: "t",
         description: "Token of the user",
@@ -41,6 +37,12 @@ const argv = yargs(process.argv)
         description: "The output file (defaults to book name)",
         type: "string",
     })
+	.option("noCleanUp", {
+		alias: "n",
+		description: "Don't clean up the temp folder after merging",
+		type: "boolean",
+		default: false
+	})
     .help()
     .alias("help", "h").argv;
 
@@ -49,7 +51,14 @@ async function initialize() {
     token = argv.token;
     platform = argv.platform;
 
-    fsExtra.mkdirSync("temp");
+    await fsExtra.ensureDir("temp");
+
+	// make sure folder is empty
+	await fs.readdir("temp").then(async files => {
+		for (const file of files) {
+			await fsExtra.remove(`temp/${file}`);
+		}
+	});
 
     while (!platform) {
         platform = prompt(
@@ -82,19 +91,18 @@ async function initialize() {
 async function downloadZip() {
     const zipFilePath = "temp/data.zip";
     return new Promise(async (resolve, reject) => {
-        var res = request(
-            "GET",
+        var res = await fetch(
             `https://ms-mms.hubscuola.it/downloadPackage/${volumeId}/publication.zip?tokenId=${token}`,
             { headers: { "Token-Session": token } }
         );
-        if (res.statusCode !== 200) {
-            console.error("Errore API:", res.statusCode);
-            resolve();
+        if (res.status !== 200) {
+            console.error("API error:", res.status);
+            reject(res.status);
         }
-        await fsExtra.writeFile(zipFilePath, res.body, (err) => {
+        await fsExtra.writeFile(zipFilePath, Buffer.from(await res.arrayBuffer()), (err) => {
             if (err) {
                 console.error(err);
-                resolve();
+                reject(err);
             }
 
             console.log("Downloaded chapters...");
@@ -103,7 +111,7 @@ async function downloadZip() {
     });
 }
 
-async function extractZip() {
+function extractZip() {
     const zipFilePath = "temp/data.zip";
     const extractDir = "temp/extracted-files";
     const zip = new AdmZip(zipFilePath);
@@ -120,6 +128,7 @@ async function connectDb() {
             (err) => {
                 if (err) {
                     console.error(err.message);
+					rejects(err);
                 }
             }
         );
@@ -129,10 +138,10 @@ async function connectDb() {
             (err, row) => {
                 if (err) {
                     console.error(err);
-                    resolve();
+                    reject();
                 }
                 if (!row) {
-                    resolve();
+                    reject();
                 }
                 data = JSON.parse(row.offline_value).indexContents.chapters;
                 console.log("Fetched chapters");
@@ -168,7 +177,7 @@ async function mergePages() {
         }
     }
     merger.save(`${title}.pdf`);
-    fsExtra.removeSync("temp");
+    if (!argv.noCleanUp) fsExtra.removeSync("temp");
     console.log("Book saved");
 }
 
@@ -177,4 +186,4 @@ await downloadZip();
 extractZip();
 await connectDb();
 await extractPages();
-mergePages();
+await mergePages();

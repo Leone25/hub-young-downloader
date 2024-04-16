@@ -18,13 +18,13 @@
   "homepage": "https://github.com/Leone25/hub-young-downloader#readme",
   "type": "module",
   "dependencies": {
-    "prompt-sync": "^4.2.0",
-    "yargs": "^17.5.1",
     "adm-zip": "^0.5.12",
     "fs-extra": "^11.2.0",
+    "node-fetch": "^3.3.2",
     "pdf-merger-js": "^5.1.1",
-    "request": "^2.88.2",
+    "prompt-sync": "^4.2.0",
     "sqlite3": "^5.1.7",
-    "sync-request": "^6.1.0"
+    "sync-request": "^6.1.0",
+    "yargs": "^17.5.1"
   }
 }
