@@ -105,5 +105,5 @@ dist
 
 
 # Temp files and books
-.temp/
+temp/
 *.pdf

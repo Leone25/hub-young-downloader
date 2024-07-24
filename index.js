@@ -7,12 +7,6 @@ import fs from "fs/promises";
 import yargs from "yargs";
 import PromptSync from "prompt-sync";
 
-let data;
-let volumeId;
-let token;
-let platform;
-let title;
-
 const prompt = PromptSync({ sigint: true });
 
 const argv = yargs(process.argv)
@@ -21,6 +15,7 @@ const argv = yargs(process.argv)
         description:
             'Platform to download from, either "hubyoung" or "hubkids"',
         type: "string",
+		choices: ["hubyoung", "hubkids"]
     })
     .option("volumeId", {
         alias: "v",
@@ -46,12 +41,10 @@ const argv = yargs(process.argv)
     .help()
     .alias("help", "h").argv;
 
-async function initialize() {
-    volumeId = argv.volumeId;
-    token = argv.token;
-    platform = argv.platform;
 
-    await fsExtra.ensureDir("temp");
+
+(async () => {
+	await fsExtra.ensureDir("temp");
 
 	// make sure folder is empty
 	await fs.readdir("temp").then(async files => {
@@ -59,6 +52,8 @@ async function initialize() {
 			await fsExtra.remove(`temp/${file}`);
 		}
 	});
+
+    let platform = argv.platform;
 
     while (!platform) {
         platform = prompt(
@@ -72,8 +67,16 @@ async function initialize() {
         }
     }
     platform = platform === "hubyoung" ? "young" : "kids";
+
+    let volumeId = argv.volumeId;
     while (!volumeId) volumeId = prompt("Input the volume ID: ");
+
+    let token = argv.token;
     while (!token) token = prompt("Input the token: ");
+
+	console.log("Fetching book info...");
+
+	let title;
 
     let response = await fetch("https://ms-api.hubscuola.it/me" + platform + "/publication/" + volumeId, { method: "GET", headers: { "Token-Session": token, "Content-Type": "application/json" } });
     const code = response.status;
@@ -86,74 +89,44 @@ async function initialize() {
         title = result.title;
         console.log(`Downloading "${title}"...`);
     }
-}
 
-async function downloadZip() {
-    const zipFilePath = "temp/data.zip";
-    return new Promise(async (resolve, reject) => {
-        var res = await fetch(
-            `https://ms-mms.hubscuola.it/downloadPackage/${volumeId}/publication.zip?tokenId=${token}`,
-            { headers: { "Token-Session": token } }
-        );
-        if (res.status !== 200) {
-            console.error("API error:", res.status);
-            reject(res.status);
-        }
-        await fsExtra.writeFile(zipFilePath, Buffer.from(await res.arrayBuffer()), (err) => {
-            if (err) {
-                console.error(err);
-                reject(err);
-            }
+	console.log("Downloading chapter...");
 
-            console.log("Downloaded chapters...");
-            resolve();
-        });
-    });
-}
+	var res = await fetch(
+		`https://ms-mms.hubscuola.it/downloadPackage/${volumeId}/publication.zip?tokenId=${token}`,
+		{ headers: { "Token-Session": token } }
+	);
+	if (res.status !== 200) {
+		console.error("API error:", res.status);
+		reject(res.status);
+	}
 
-function extractZip() {
-    const zipFilePath = "temp/data.zip";
-    const extractDir = "temp/extracted-files";
-    const zip = new AdmZip(zipFilePath);
+	console.log("Extracting...");
 
-    zip.extractAllTo(extractDir);
+    const zip = new AdmZip(Buffer.from(await res.arrayBuffer()));
+    await zip.extractAllTo("temp/extracted-files");
 
-    console.log("Extracted chapters...");
-}
+	console.log("Reading chapter list...");
 
-async function connectDb() {
-    return new Promise((resolve, rejects) => {
-        let db = new sqlite3.Database(
-            "./temp/extracted-files/publication/publication.db",
-            (err) => {
-                if (err) {
-                    console.error(err.message);
-					rejects(err);
-                }
-            }
-        );
-        db.get(
-            "SELECT offline_value FROM offline_tbl WHERE offline_path=?",
-            [`meyoung/publication/${volumeId}`],
-            (err, row) => {
-                if (err) {
-                    console.error(err);
-                    reject();
-                }
-                if (!row) {
-                    reject();
-                }
-                data = JSON.parse(row.offline_value).indexContents.chapters;
-                console.log("Fetched chapters");
-                resolve();
-            }
-        );
-        db.close();
-    });
-}
+	let db = new sqlite3.Database(
+		"./temp/extracted-files/publication/publication.db",
+		(err) => {
+			if (err) {
+				console.error(err.message);
+				process.exit(1);
+			}
+		}
+	);
+	let chapters = await new Promise((resolve) => {
+		db.get("SELECT offline_value FROM offline_tbl WHERE offline_path=?",[`meyoung/publication/${volumeId}`], (err, row) => {
+			resolve(JSON.parse(row.offline_value).indexContents.chapters);
+		});
+	});
+	db.close();
 
-async function extractPages() {
-    for (const chapter of data) {
+	console.log("Downloading pages...")
+
+	for (const chapter of chapters) {
         const url = `https://ms-mms.hubscuola.it/public/${volumeId}/${chapter.chapterId}.zip?tokenId=${token}&app=v2`;
         var res = await fetch(url, {
             headers: { "Token-Session": token },
@@ -161,13 +134,11 @@ async function extractPages() {
         const zip = new AdmZip(Buffer.from(res));
         await zip.extractAllTo(`temp/build`);
     }
-    console.log("Extracted pages...");
-}
 
-async function mergePages() {
-    const merger = new PDFMerger();
-    console.log("Merging pages...");
-    for (const chapter of data) {
+	console.log("Merging pages...");
+
+	const merger = new PDFMerger();
+    for (const chapter of chapters) {
         let base = `./temp/build/${chapter.chapterId}`;
         const files = fsExtra.readdirSync(base);
         for (const file of files) {
@@ -176,14 +147,10 @@ async function mergePages() {
             }
         }
     }
-    merger.save(`${title}.pdf`);
-    if (!argv.noCleanUp) fsExtra.removeSync("temp");
-    console.log("Book saved");
-}
+    merger.save(argv.file || `${title}.pdf`);
 
-await initialize();
-await downloadZip();
-extractZip();
-await connectDb();
-await extractPages();
-await mergePages();
+    if (!argv.noCleanUp) fsExtra.removeSync("temp");
+
+    console.log("Book saved");
+
+})();
