@@ -115,7 +115,7 @@ const argv = yargs(process.argv)
         }
 	);
 
-    let chapters = JSON.parse(db.prepare("SELECT offline_value FROM offline_tbl WHERE offline_path=?").get(`meyoung/publication/${volumeId}`).offline_value).indexContents.chapters;
+    let chapters = JSON.parse(db.prepare("SELECT offline_value FROM offline_tbl WHERE offline_path=?").get(`me${platform}/publication/${volumeId}`).offline_value).indexContents.chapters;
 
 	db.close();
 
