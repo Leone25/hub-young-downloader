@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import initSqlJs from "sql.js";
 import AdmZip from "adm-zip";
 import PDFMerger from "pdf-merger-js";
 import fetch from "node-fetch";
@@ -108,15 +108,22 @@ const argv = yargs(process.argv)
 
 	console.log("Reading chapter list...");
 
-	let db = new Database(
-		"./temp/extracted-files/publication/publication.db",
-		{
-            readonly: true,
-        }
+	const SQL = await initSqlJs();
+	const dbFile = await fs.readFile(
+		"./temp/extracted-files/publication/publication.db"
 	);
-
-    let chapters = JSON.parse(db.prepare("SELECT offline_value FROM offline_tbl WHERE offline_path=?").get(`me${platform}/publication/${volumeId}`).offline_value).indexContents.chapters;
-
+	const db = new SQL.Database(dbFile);
+	const stmt = db.prepare(
+		"SELECT offline_value FROM offline_tbl WHERE offline_path=?"
+	);
+	stmt.bind([`me${platform}/publication/${volumeId}`]);
+	if (!stmt.step()) {
+		console.error("Chapter list not found in publication database");
+		process.exit(1);
+	}
+	const chapters = JSON.parse(stmt.getAsObject().offline_value).indexContents
+		.chapters;
+	stmt.free();
 	db.close();
 
 	console.log("Downloading pages...")
