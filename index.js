@@ -121,20 +121,25 @@ const argv = yargs(process.argv)
 
 	console.log("Downloading pages...")
 
+    const chaptersToMerge = [];
+
 	for (const chapter of chapters) {
-        const url = `https://ms-mms.hubscuola.it/public/${volumeId}/${chapter.chapterId}.zip?tokenId=${token}&app=v2`;
-        var res = await fetch(url, {
-            headers: { "Token-Session": token },
-        }).then((res) => res.arrayBuffer());
-        const zip = new AdmZip(Buffer.from(res));
-        await zip.extractAllTo(`temp/build`);
+        if (chapter.children && chapter.children.every(c => typeof c !== "number")) {
+            const url = `https://ms-mms.hubscuola.it/public/${volumeId}/${chapter.chapterId}.zip?tokenId=${token}&app=v2`;
+            var res = await fetch(url, {
+                headers: {"Token-Session": token},
+            }).then((res) => res.arrayBuffer());
+            const zip = new AdmZip(Buffer.from(res));
+            await zip.extractAllTo(`temp/build`);
+            chaptersToMerge.push(chapter.chapterId);
+        }
     }
 
 	console.log("Merging pages...");
 
 	const merger = new PDFMerger();
-    for (const chapter of chapters) {
-        let base = `./temp/build/${chapter.chapterId}`;
+    for (const chapter of chaptersToMerge) {
+        let base = `./temp/build/${chapter}`;
         const files = fsExtra.readdirSync(base);
         for (const file of files) {
             if (file.includes(".pdf")) {
